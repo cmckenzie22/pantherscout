@@ -78,13 +78,56 @@
 
     /* ── Roster View ─────────────────────────────────── */
     .roster-body { padding: 16px; }
+    
+    .sort-bar {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 14px;
+    }
+    .sort-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      margin-right: 2px;
+      flex-shrink: 0;
+    }
+    .sort-btn {
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      padding: 7px 13px;
+      background: var(--card);
+      border: 1.5px solid var(--border);
+      border-radius: 20px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      font-family: inherit;
+      color: var(--muted);
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s, color 0.15s;
+      white-space: nowrap;
+    }
+    .sort-btn.active {
+      background: var(--navy);
+      border-color: var(--navy);
+      color: #fff;
+    }
 
+    .roster-actions {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+    
     .add-btn {
+      flex: 1;
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 8px;
-      width: 100%;
       padding: 15px;
       background: var(--gold);
       color: var(--navy);
@@ -93,12 +136,84 @@
       font-size: 1rem;
       font-weight: 700;
       cursor: pointer;
-      margin-bottom: 18px;
       letter-spacing: 0.2px;
       box-shadow: 0 2px 8px rgba(75,156,211,0.4);
       transition: filter 0.1s;
     }
     .add-btn:active { filter: brightness(0.92); }
+
+    .import-btn, .export-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 15px 18px;
+      background: var(--card);
+      color: var(--text);
+      border: 1.5px solid var(--border);
+      border-radius: 14px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      transition: filter 0.1s;
+      white-space: nowrap;
+    }
+    .import-btn:active, .export-btn:active { filter: brightness(0.94); }
+
+    .export-hint {
+      font-size: 0.85rem;
+      color: var(--muted);
+      margin-bottom: 18px;
+      line-height: 1.5;
+    }
+    .format-btns { display: flex; gap: 10px; margin-bottom: 14px; }
+    .format-btn {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      padding: 18px 12px;
+      background: var(--bg);
+      border: 1.5px solid var(--border);
+      border-radius: 14px;
+      cursor: pointer;
+      font-family: inherit;
+      transition: border-color 0.15s, background 0.15s;
+    }
+    .format-btn:active { background: var(--border); }
+    .format-icon { font-size: 2rem; }
+    .format-name { font-size: 1rem; font-weight: 700; color: var(--text); }
+    .format-desc { font-size: 0.75rem; color: var(--muted); }
+
+    .eval-summary {
+      background: var(--navy);
+      color: #fff;
+      border-radius: 12px;
+      padding: 12px 16px;
+      margin-bottom: 14px;
+      font-size: 0.88rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .eval-summary-icon { font-size: 1.1rem; flex-shrink: 0; }
+    .eval-summary-text { flex: 1; }
+    .eval-summary-count { font-weight: 700; color: var(--gold); }
+    .eval-summary-bar {
+      height: 5px;
+      background: rgba(255,255,255,0.15);
+      border-radius: 3px;
+      margin-top: 6px;
+      overflow: hidden;
+    }
+    .eval-summary-fill {
+      height: 100%;
+      background: var(--gold);
+      border-radius: 3px;
+      transition: width 0.4s ease;
+    }
 
     .player-list { display: flex; flex-direction: column; gap: 10px; }
 
@@ -175,6 +290,34 @@
       line-height: 1;
     }
 
+
+    .star-btn {
+      flex-shrink: 0;
+      background: none;
+      border: 1.5px solid var(--border);
+      color: var(--muted);
+      border-radius: 8px;
+      padding: 5px 9px;
+      font-size: 1.05rem;
+      cursor: pointer;
+      line-height: 1;
+      transition: color 0.15s, border-color 0.15s;
+    }
+    .star-btn.starred { color: #f0a800; border-color: #f0a800; }
+
+    .star-hdr-btn {
+      background: none;
+      border: none;
+      color: rgba(255,255,255,0.35);
+      font-size: 1.7rem;
+      cursor: pointer;
+      line-height: 1;
+      padding: 0 0 0 4px;
+      flex-shrink: 0;
+      transition: color 0.15s;
+    }
+    .star-hdr-btn.starred { color: #f0a800; }
+   
     /* ── Player Detail View ──────────────────────────── */
     .detail-body { padding: 14px; padding-bottom: 48px; }
 
@@ -443,6 +586,28 @@
       font-family: inherit;
       cursor: pointer;
     }
+     /* ── Import Modal ───────────────────────────────── */
+    .import-textarea {
+      width: 100%;
+      height: 180px;
+      padding: 12px;
+      border: 1.5px solid var(--border);
+      border-radius: 11px;
+      font-size: 0.92rem;
+      font-family: inherit;
+      color: var(--text);
+      resize: none;
+      outline: none;
+      line-height: 1.6;
+      margin-bottom: 8px;
+    }
+    .import-textarea:focus { border-color: var(--navy); }
+    .import-hint {
+      font-size: 0.75rem;
+      color: var(--muted);
+      margin-bottom: 14px;
+      line-height: 1.5;
+    }
     .btn-keep {
       padding: 12px 18px;
       background: var(--bg);
@@ -462,13 +627,30 @@
   <header class="app-header">
     <div class="header-text">
       <div class="header-eyebrow">⚾ Baseball Scout</div>
-      <div class="header-title">Player Roster</div>
+      <div class="header-title">Evaluation Roster</div>
     </div>
   </header>
   <div class="roster-body">
-    <button class="add-btn" onclick="openAddModal()">＋ Add Player</button>
+    <div class="roster-actions">
+      <button class="add-btn" onclick="openAddModal()">＋ Add Player</button>
+      <button class="import-btn" onclick="openImportModal()">↓ Import</button>
+      <button class="export-btn" onclick="openExportModal()">↑ Export</button>
+    </div>
+    <div class="sort-bar">
+      <span class="sort-label">Sort:</span>
+      <button class="sort-btn active" id="sort-btn-name"   onclick="setSort('name')">Name <span id="sort-dir-name">↑</span></button>
+      <button class="sort-btn"        id="sort-btn-rating" onclick="setSort('rating')">Rating <span id="sort-dir-rating"></span></button>
+    </div>
+
+    <div class="eval-summary" id="eval-summary" style="display:none">
+      <div class="eval-summary-icon">📋</div>
+      <div class="eval-summary-text">
+        <span id="eval-summary-label"></span>
+        <div class="eval-summary-bar"><div class="eval-summary-fill" id="eval-summary-fill"></div></div>
+      </div>
+    </div>
     <div class="player-list" id="player-list"></div>
-  </div>
+  </div>    
 </div>
 
 <!-- ═════════════════════════════════ DETAIL VIEW -->
@@ -479,6 +661,7 @@
       <div class="header-eyebrow">Player Profile</div>
       <div class="header-title" id="hdr-name">Player</div>
     </div>
+    <button class="star-hdr-btn" id="star-hdr-btn" onclick="toggleStarDetail()" aria-label="Favourite player">☆</button>
   </header>
   <div class="detail-body">
 
@@ -587,6 +770,43 @@
   </div>
 </div>
 
+<!-- ════════════════════════════ IMPORT MODAL -->
+<div class="modal-bg" id="import-modal" onclick="onImportBgClick(event)">
+  <div class="modal-sheet">
+    <div class="modal-title">Import Players</div>
+    <textarea class="import-textarea" id="import-textarea"
+              placeholder="John Smith&#10;Jane Doe&#10;Mike Johnson&#10;…"></textarea>
+    <div class="import-hint">Paste one player name per line. Blank lines are skipped.<br>Duplicate names will still be added.</div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeImportModal()">Cancel</button>
+      <button class="btn-confirm" onclick="confirmImport()">Import Players</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════ EXPORT MODAL -->
+<div class="modal-bg" id="export-modal" onclick="onExportBgClick(event)">
+  <div class="modal-sheet">
+    <div class="modal-title">Export Roster</div>
+    <p class="export-hint">Download all player data in the current sort order.</p>
+    <div class="format-btns">
+      <button class="format-btn" onclick="exportData('csv')">
+        <div class="format-icon">📊</div>
+        <div class="format-name">CSV</div>
+        <div class="format-desc">Excel &amp; Google Sheets</div>
+      </button>
+      <button class="format-btn" onclick="exportData('txt')">
+        <div class="format-icon">📄</div>
+        <div class="format-name">TXT</div>
+        <div class="format-desc">Plain text file</div>
+      </button>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeExportModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
 <!-- ═════════════════════════ CONFIRM DELETE DIALOG -->
 <div class="confirm-bg" id="confirm-modal">
   <div class="confirm-dialog">
@@ -639,9 +859,79 @@ function getAggregate(player) {
   return { avg: (rated.reduce((a,b) => a+b, 0) / rated.length).toFixed(1), count: rated.length };
 }
 
+function sortComparator(a, b) {
+  if (!!b.starred !== !!a.starred) return b.starred ? 1 : -1;
+  if (sortField === 'rating') {
+    const aggA = getAggregate(a);
+    const aggB = getAggregate(b);
+    if (!aggA && !aggB) return a.name.localeCompare(b.name);
+    if (!aggA) return 1;
+    if (!aggB) return -1;
+    const cmp = parseFloat(aggA.avg) - parseFloat(aggB.avg);
+    return sortDir === 'asc' ? cmp : -cmp;
+  }
+  const cmp = a.name.localeCompare(b.name);
+  return sortDir === 'asc' ? cmp : -cmp;
+}
+
+function setSort(field) {
+  if (sortField === field) {
+    sortDir = sortDir === 'asc' ? 'desc' : 'asc';
+  } else {
+    sortField = field;
+    sortDir = 'asc';
+  }
+  renderRoster();
+}
+
+function renderSortBar() {
+  ['name', 'rating'].forEach(field => {
+    const btn   = document.getElementById('sort-btn-' + field);
+    const arrow = document.getElementById('sort-dir-' + field);
+    const active = sortField === field;
+    btn.className       = active ? 'sort-btn active' : 'sort-btn';
+    arrow.textContent   = active ? (sortDir === 'asc' ? '↑' : '↓') : '';
+  });
+}
+
+function toggleStar(id) {
+  const p = getPlayer(id);
+  if (!p) return;
+  p.starred = !p.starred;
+  persist();
+  renderRoster();
+}
+
+function toggleStarDetail() {
+  const p = getPlayer(currentId);
+  if (!p) return;
+  p.starred = !p.starred;
+  persist();
+  const btn = document.getElementById('star-hdr-btn');
+  btn.textContent = p.starred ? '★' : '☆';
+  btn.className   = p.starred ? 'star-hdr-btn starred' : 'star-hdr-btn';
+}
+
 // ── Roster View ──────────────────────────────────────
 function renderRoster() {
   const list = document.getElementById('player-list');
+
+    // Evaluated summary
+  const summaryEl  = document.getElementById('eval-summary');
+  const labelEl    = document.getElementById('eval-summary-label');
+  const fillEl     = document.getElementById('eval-summary-fill');
+  const total      = players.length;
+  const evaluated  = players.filter(p => getAggregate(p) !== null).length;
+
+  if (total > 0) {
+    summaryEl.style.display = 'flex';
+    const pct = Math.round((evaluated / total) * 100);
+    labelEl.innerHTML = `<span class="eval-summary-count">${evaluated} of ${total}</span> Player${total !== 1 ? 's' : ''} Evaluated`;
+    fillEl.style.width = pct + '%';
+  } else {
+    summaryEl.style.display = 'none';
+  }
+  
   if (!players.length) {
     list.innerHTML = `
       <div class="empty-state">
@@ -650,6 +940,7 @@ function renderRoster() {
       </div>`;
     return;
   }
+  renderSortBar();
   list.innerHTML = players.map(p => {
     const agg = getAggregate(p);
     const chip = agg
@@ -664,6 +955,7 @@ function renderRoster() {
           ${pos}
         </div>
         ${chip}
+       <button class="${starClass}" onclick="event.stopPropagation(); toggleStar('${p.id}')" aria-label="Favourite player">${starIcon}</button>
         <button class="del-btn" onclick="event.stopPropagation(); promptDelete('${p.id}')" aria-label="Remove player">✕</button>
       </div>`;
   }).join('');
@@ -692,9 +984,13 @@ function openPlayer(id) {
 
   refreshAgg(p);
   setSaveNote('idle');
+  updateEvalLabels(p.position);
+  const starBtn = document.getElementById('star-hdr-btn');
+  starBtn.textContent = p.starred ? '★' : '☆';
+  starBtn.className   = p.starred ? 'star-hdr-btn starred' : 'star-hdr-btn';
 
   document.getElementById('edit-name').oninput = () => onNameEdit();
-  document.getElementById('edit-pos').oninput  = () => schedSave();
+  document.getElementById('edit-pos').oninput  = () => { updateEvalLabels(document.getElementById('edit-pos').value); schedSave(); };
 }
 
 function goBack() {
@@ -793,6 +1089,39 @@ function onModalBgClick(e) {
   if (e.target === e.currentTarget) closeAddModal();
 }
 
+function openImportModal() {
+  document.getElementById('import-textarea').value = '';
+  document.getElementById('import-modal').classList.add('open');
+  setTimeout(() => document.getElementById('import-textarea').focus(), 80);
+}
+
+function closeImportModal() {
+  document.getElementById('import-modal').classList.remove('open');
+}
+
+function onImportBgClick(e) {
+  if (e.target === e.currentTarget) closeImportModal();
+}
+
+function confirmImport() {
+  const raw = document.getElementById('import-textarea').value;
+  const names = raw.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+  if (!names.length) { document.getElementById('import-textarea').focus(); return; }
+  names.forEach(name => {
+    players.push({
+      id: uid(),
+      name,
+      position: '',
+      starred: false,
+      evaluations: Object.fromEntries(EVAL_KEYS.map(k => [k, 0])),
+      notes: ''
+    });
+  });
+  persist();
+  closeImportModal();
+  renderRoster();
+}
+  
 function confirmAdd() {
   const name = document.getElementById('inp-name').value.trim();
   if (!name) { document.getElementById('inp-name').focus(); return; }
@@ -831,6 +1160,46 @@ function confirmDelete() {
   persist();
   closeConfirm();
   renderRoster();
+}
+  
+// ── Export ────────────────────────────────────────────
+function csvEsc(val) {
+  const s = String(val == null ? '' : val);
+  return (s.includes(',') || s.includes('"') || s.includes('\n'))
+    ? `"${s.replace(/"/g, '""')}"` : s;
+}
+
+function exportData(ext) {
+  const headers = ['Player Name', 'Position', 'Grade', ...EVAL_KEYS.map(k => EVAL_LABELS[k])];
+  const rows = [...players].sort(sortComparator).map(p => {
+    const agg   = getAggregate(p);
+    const grade = agg ? toGrade(parseFloat(agg.avg)) : '';
+    const scores = EVAL_KEYS.map(k => p.evaluations[k] > 0 ? p.evaluations[k] : '');
+    return [csvEsc(p.name), csvEsc(p.position || ''), grade, ...scores].join(',');
+  });
+  const content = [headers.join(','), ...rows].join('\r\n');
+  const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href     = url;
+  a.download = `hockey-roster.${ext}`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  closeExportModal();
+}
+
+function openExportModal() {
+  document.getElementById('export-modal').classList.add('open');
+}
+
+function closeExportModal() {
+  document.getElementById('export-modal').classList.remove('open');
+}
+
+function onExportBgClick(e) {
+  if (e.target === e.currentTarget) closeExportModal();
 }
 
 // ── Service Worker ────────────────────────────────────
