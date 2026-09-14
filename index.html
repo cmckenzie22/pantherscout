@@ -949,6 +949,8 @@ function renderRoster() {
       ? `<div class="score-chip">${agg.avg}</div>`
       : `<div class="score-chip unrated">—</div>`;
     const pos = p.position ? `<div class="card-position">${esc(p.position)}</div>` : '';
+    const starClass = p.starred ? 'star-btn starred' : 'star-btn';
+    const starIcon  = p.starred ? '★' : '☆';
     return `
       <div class="player-card" onclick="openPlayer('${p.id}')">
         <div class="avatar">${esc(initials(p.name))}</div>
