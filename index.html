@@ -988,7 +988,7 @@ function openPlayer(id) {
 
   refreshAgg(p);
   setSaveNote('idle');
-  updateEvalLabels(p.position);
+ 
   const starBtn = document.getElementById('star-hdr-btn');
   starBtn.textContent = p.starred ? '★' : '☆';
   starBtn.className   = p.starred ? 'star-hdr-btn starred' : 'star-hdr-btn';
