@@ -943,7 +943,7 @@ function renderRoster() {
     return;
   }
   renderSortBar();
-  list.innerHTML = players.map(p => {
+  list.innerHTML = [...players].sort(sortComparator).map(p => {
     const agg = getAggregate(p);
     const chip = agg
       ? `<div class="score-chip">${agg.avg}</div>`
@@ -1134,6 +1134,7 @@ function confirmAdd() {
     id: uid(),
     name,
     position,
+    starred: false,
     evaluations: Object.fromEntries(EVAL_KEYS.map(k => [k, 0])),
     notes: ''
   };
