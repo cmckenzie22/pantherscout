@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#0d2137">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <title>Scout Board</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚾</text></svg>">
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    :root {
+      --navy:       #0d2137;
+      --navy-light: #1a3558;
+      --gold:       #c8a84b;
+      --gold-light: #e8c86e;
+      --red:        #c0392b;
+      --green:      #27ae60;
+      --bg:         #eef0f4;
+      --card:       #ffffff;
+      --text:       #1a1a2e;
+      --muted:      #7a849a;
+      --border:     #dde1e8;
+      --slider-bg:  #d0d5df;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      max-width: 480px;
+      margin: 0 auto;
+      position: relative;
+    }
+
+    /* ── Views ──────────────────────────────────────── */
+    .view { display: none; min-height: 100vh; }
+    .view.active { display: block; }
+
+    /* ── Header ─────────────────────────────────────── */
+    .app-header {
+      background: var(--navy);
+      color: #fff;
+      padding: 14px 18px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.35);
+    }
+
+    .header-text { flex: 1; min-width: 0; }
+    .header-eyebrow { font-size: 0.65rem; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: var(--gold); }
+    .header-title { font-size: 1.15rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    .back-btn {
+      background: none;
+      border: none;
+      color: var(--gold);
+      font-size: 2rem;
+      line-height: 1;
+      cursor: pointer;
+      padding: 0 6px 0 0;
+      display: flex;
+      align-items: center;
+    }
+
+    /* ── Roster View ─────────────────────────────────── */
+    .roster-body { padding: 16px; }
+
+    .add-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      padding: 15px;
+      background: var(--gold);
+      color: var(--navy);
+      border: none;
+      border-radius: 14px;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      margin-bottom: 18px;
+      letter-spacing: 0.2px;
+      box-shadow: 0 2px 8px rgba(200,168,75,0.4);
+      transition: filter 0.1s;
+    }
+    .add-btn:active { filter: brightness(0.92); }
+
+    .player-list { display: flex; flex-direction: column; gap: 10px; }
+
+    .empty-state {
+      text-align: center;
+      padding: 64px 24px;
+      color: var(--muted);
+    }
+    .empty-icon { font-size: 3.5rem; margin-bottom: 14px; }
+    .empty-text { font-size: 1rem; line-height: 1.5; }
+
+    /* Player Card */
+    .player-card {
+      background: var(--card);
+      border-radius: 14px;
+      padding: 14px 14px 14px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      border: 1px solid var(--border);
+      cursor: pointer;
+      transition: transform 0.1s, box-shadow 0.1s;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    }
+    .player-card:active { transform: scale(0.985); box-shadow: none; }
+
+    .avatar {
+      width: 46px;
+      height: 46px;
+      border-radius: 50%;
+      background: var(--navy);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 1rem;
+      flex-shrink: 0;
+      letter-spacing: 0.5px;
+    }
+
+    .card-info { flex: 1; min-width: 0; }
+    .card-name { font-weight: 600; font-size: 0.98rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .card-position { font-size: 0.78rem; color: var(--muted); margin-top: 2px; }
+
+    .score-chip {
+      flex-shrink: 0;
+      font-weight: 700;
+      font-size: 0.95rem;
+      padding: 6px 11px;
+      border-radius: 8px;
+      background: var(--navy);
+      color: var(--gold);
+      min-width: 50px;
+      text-align: center;
+      letter-spacing: 0.3px;
+    }
+    .score-chip.unrated {
+      background: var(--border);
+      color: var(--muted);
+      font-size: 0.78rem;
+      font-weight: 500;
+    }
+
+    .del-btn {
+      flex-shrink: 0;
+      background: none;
+      border: 1.5px solid #ffd0cc;
+      color: var(--red);
+      border-radius: 8px;
+      padding: 5px 9px;
+      font-size: 1.05rem;
+      cursor: pointer;
+      line-height: 1;
+    }
+
+    /* ── Player Detail View ──────────────────────────── */
+    .detail-body { padding: 14px; padding-bottom: 48px; }
+
+    .profile-card {
+      background: var(--navy);
+      border-radius: 16px;
+      padding: 18px 20px;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .profile-avatar {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: var(--gold);
+      color: var(--navy);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 1.4rem;
+      flex-shrink: 0;
+    }
+
+    .profile-fields { flex: 1; min-width: 0; }
+
+    .field-name {
+      width: 100%;
+      background: none;
+      border: none;
+      border-bottom: 1.5px dashed rgba(255,255,255,0.3);
+      color: #fff;
+      font-size: 1.1rem;
+      font-weight: 700;
+      font-family: inherit;
+      outline: none;
+      padding: 2px 0 4px;
+    }
+    .field-name::placeholder { color: rgba(255,255,255,0.35); }
+
+    .field-pos {
+      width: 100%;
+      background: none;
+      border: none;
+      color: var(--gold);
+      font-size: 0.85rem;
+      font-family: inherit;
+      outline: none;
+      padding: 6px 0 0;
+    }
+    .field-pos::placeholder { color: rgba(200,168,75,0.45); }
+
+    .agg-display { text-align: right; flex-shrink: 0; }
+    .agg-number { font-size: 2.4rem; font-weight: 800; color: var(--gold); line-height: 1; }
+    .agg-label { font-size: 0.65rem; color: rgba(255,255,255,0.5); letter-spacing: 1px; text-transform: uppercase; margin-top: 3px; }
+    .agg-rated { font-size: 0.7rem; color: rgba(255,255,255,0.4); margin-top: 2px; }
+
+    /* Section Card */
+    .section-card {
+      background: var(--card);
+      border-radius: 16px;
+      padding: 16px 18px;
+      margin-bottom: 12px;
+      border: 1px solid var(--border);
+      box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+    }
+
+    .section-title {
+      font-size: 0.68rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+      color: var(--muted);
+      margin-bottom: 18px;
+    }
+
+    /* Eval Row */
+    .eval-row { margin-bottom: 22px; }
+    .eval-row:last-child { margin-bottom: 0; }
+
+    .eval-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+
+    .eval-label { font-weight: 600; font-size: 0.9rem; }
+
+    .eval-val {
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: var(--navy);
+      min-width: 48px;
+      text-align: right;
+    }
+    .eval-val.unrated { color: var(--muted); font-weight: 400; font-size: 0.8rem; }
+
+    /* Slider */
+    input[type="range"] {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 100%;
+      height: 7px;
+      background: linear-gradient(
+        to right,
+        var(--navy) 0%,
+        var(--navy) var(--fill, 0%),
+        var(--slider-bg) var(--fill, 0%),
+        var(--slider-bg) 100%
+      );
+      border-radius: 4px;
+      outline: none;
+      cursor: pointer;
+      display: block;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background: #fff;
+      border: 3px solid var(--navy);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+      cursor: pointer;
+      transition: border-color 0.15s;
+    }
+
+    input[type="range"]:active::-webkit-slider-thumb {
+      border-color: var(--gold);
+      background: var(--gold-light);
+    }
+
+    .slider-scale {
+      display: flex;
+      justify-content: space-between;
+      padding: 0 1px;
+      margin-top: 5px;
+    }
+    .slider-scale span { font-size: 0.68rem; color: var(--muted); }
+
+    /* Notes */
+    .notes-area {
+      width: 100%;
+      min-height: 110px;
+      padding: 12px;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      font-size: 0.9rem;
+      font-family: inherit;
+      color: var(--text);
+      resize: vertical;
+      outline: none;
+      line-height: 1.5;
+    }
+    .notes-area:focus { border-color: var(--navy); }
+
+    .autosave-note {
+      text-align: center;
+      font-size: 0.73rem;
+      color: var(--muted);
+      margin-top: 10px;
+    }
+    .autosave-note.saved { color: var(--green); }
+
+    /* ── Add Player Modal ───────────────────────────── */
+    .modal-bg {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.55);
+      z-index: 100;
+      align-items: flex-end;
+      justify-content: center;
+    }
+    .modal-bg.open { display: flex; }
+
+    .modal-sheet {
+      background: #fff;
+      border-radius: 22px 22px 0 0;
+      padding: 24px 20px 32px;
+      width: 100%;
+      max-width: 480px;
+    }
+
+    .modal-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 18px; }
+
+    .modal-input {
+      width: 100%;
+      padding: 13px 16px;
+      border: 1.5px solid var(--border);
+      border-radius: 11px;
+      font-size: 1rem;
+      font-family: inherit;
+      outline: none;
+      color: var(--text);
+      margin-bottom: 10px;
+      display: block;
+    }
+    .modal-input:focus { border-color: var(--navy); }
+
+    .modal-actions { display: flex; gap: 10px; margin-top: 6px; }
+
+    .btn-cancel {
+      padding: 13px 18px;
+      background: var(--bg);
+      color: var(--text);
+      border: 1.5px solid var(--border);
+      border-radius: 11px;
+      font-size: 0.95rem;
+      font-family: inherit;
+      cursor: pointer;
+    }
+
+    .btn-confirm {
+      flex: 1;
+      padding: 13px;
+      background: var(--navy);
+      color: #fff;
+      border: none;
+      border-radius: 11px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+    }
+    .btn-confirm:active { filter: brightness(1.2); }
+
+    /* ── Confirm Delete Dialog ──────────────────────── */
+    .confirm-bg {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.55);
+      z-index: 200;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .confirm-bg.open { display: flex; }
+
+    .confirm-dialog {
+      background: #fff;
+      border-radius: 18px;
+      padding: 24px;
+      width: 100%;
+      max-width: 340px;
+    }
+    .confirm-dialog h3 { font-size: 1rem; font-weight: 700; margin-bottom: 8px; }
+    .confirm-dialog p { font-size: 0.88rem; color: var(--muted); margin-bottom: 20px; line-height: 1.5; }
+    .confirm-actions { display: flex; gap: 10px; }
+    .btn-delete {
+      flex: 1;
+      padding: 12px;
+      background: var(--red);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+    }
+    .btn-keep {
+      padding: 12px 18px;
+      background: var(--bg);
+      color: var(--text);
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      font-size: 0.95rem;
+      font-family: inherit;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════ ROSTER VIEW -->
+<div id="roster-view" class="view active">
+  <header class="app-header">
+    <div class="header-text">
+      <div class="header-eyebrow">⚾ Baseball Scout</div>
+      <div class="header-title">Player Roster</div>
+    </div>
+  </header>
+  <div class="roster-body">
+    <button class="add-btn" onclick="openAddModal()">＋ Add Player</button>
+    <div class="player-list" id="player-list"></div>
+  </div>
+</div>
+
+<!-- ═════════════════════════════════ DETAIL VIEW -->
+<div id="detail-view" class="view">
+  <header class="app-header">
+    <button class="back-btn" onclick="goBack()" aria-label="Back to roster">‹</button>
+    <div class="header-text">
+      <div class="header-eyebrow">Player Profile</div>
+      <div class="header-title" id="hdr-name">Player</div>
+    </div>
+  </header>
+  <div class="detail-body">
+
+    <!-- Profile card -->
+    <div class="profile-card">
+      <div class="profile-avatar" id="profile-avatar">?</div>
+      <div class="profile-fields">
+        <input type="text" class="field-name" id="edit-name" placeholder="Player name" maxlength="60" />
+        <input type="text" class="field-pos"  id="edit-pos"  placeholder="Position (e.g. SS, CF, P)" maxlength="20" />
+      </div>
+      <div class="agg-display">
+        <div class="agg-number" id="agg-number">—</div>
+        <div class="agg-label">/ 5.0</div>
+        <div class="agg-rated" id="agg-rated"></div>
+      </div>
+    </div>
+
+    <!-- Evaluation -->
+    <div class="section-card">
+      <div class="section-title">Evaluation</div>
+
+      <div class="eval-row">
+        <div class="eval-header">
+          <span class="eval-label">Hitting Contact</span>
+          <span class="eval-val unrated" id="val-hittingContact">Not rated</span>
+        </div>
+        <input type="range" min="0" max="5" step="1" value="0" id="sl-hittingContact"
+               oninput="onSlider(this,'hittingContact')">
+        <div class="slider-scale"><span>—</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span></div>
+      </div>
+
+      <div class="eval-row">
+        <div class="eval-header">
+          <span class="eval-label">Hitting Power</span>
+          <span class="eval-val unrated" id="val-hittingPower">Not rated</span>
+        </div>
+        <input type="range" min="0" max="5" step="1" value="0" id="sl-hittingPower"
+               oninput="onSlider(this,'hittingPower')">
+        <div class="slider-scale"><span>—</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span></div>
+      </div>
+
+      <div class="eval-row">
+        <div class="eval-header">
+          <span class="eval-label">Arm Strength</span>
+          <span class="eval-val unrated" id="val-armStrength">Not rated</span>
+        </div>
+        <input type="range" min="0" max="5" step="1" value="0" id="sl-armStrength"
+               oninput="onSlider(this,'armStrength')">
+        <div class="slider-scale"><span>—</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span></div>
+      </div>
+
+      <div class="eval-row">
+        <div class="eval-header">
+          <span class="eval-label">Fielding Ability</span>
+          <span class="eval-val unrated" id="val-fieldingAbility">Not rated</span>
+        </div>
+        <input type="range" min="0" max="5" step="1" value="0" id="sl-fieldingAbility"
+               oninput="onSlider(this,'fieldingAbility')">
+        <div class="slider-scale"><span>—</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span></div>
+      </div>
+
+      <div class="eval-row">
+        <div class="eval-header">
+          <span class="eval-label">Running</span>
+          <span class="eval-val unrated" id="val-running">Not rated</span>
+        </div>
+        <input type="range" min="0" max="5" step="1" value="0" id="sl-running"
+               oninput="onSlider(this,'running')">
+        <div class="slider-scale"><span>—</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span></div>
+      </div>
+
+      <div class="eval-row">
+        <div class="eval-header">
+          <span class="eval-label">Athleticism</span>
+          <span class="eval-val unrated" id="val-athleticism">Not rated</span>
+        </div>
+        <input type="range" min="0" max="5" step="1" value="0" id="sl-athleticism"
+               oninput="onSlider(this,'athleticism')">
+        <div class="slider-scale"><span>—</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span></div>
+      </div>
+    </div>
+
+    <!-- Notes -->
+    <div class="section-card">
+      <div class="section-title">Scouting Notes</div>
+      <textarea class="notes-area" id="player-notes" placeholder="Add observations, strengths, areas to develop…"
+                oninput="onNotes(this.value)"></textarea>
+    </div>
+
+    <div class="autosave-note" id="save-note">Changes saved automatically</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════ ADD PLAYER MODAL -->
+<div class="modal-bg" id="add-modal" onclick="onModalBgClick(event)">
+  <div class="modal-sheet">
+    <div class="modal-title">Add New Player</div>
+    <input type="text" class="modal-input" id="inp-name" placeholder="Full name *" maxlength="60"
+           onkeydown="if(event.key==='Enter') document.getElementById('inp-pos').focus()">
+    <input type="text" class="modal-input" id="inp-pos" placeholder="Position (optional)"  maxlength="20"
+           onkeydown="if(event.key==='Enter') confirmAdd()">
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeAddModal()">Cancel</button>
+      <button class="btn-confirm" onclick="confirmAdd()">Add Player</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═════════════════════════ CONFIRM DELETE DIALOG -->
+<div class="confirm-bg" id="confirm-modal">
+  <div class="confirm-dialog">
+    <h3>Remove Player?</h3>
+    <p id="confirm-msg">This will permanently remove the player and all their evaluation data.</p>
+    <div class="confirm-actions">
+      <button class="btn-keep" onclick="closeConfirm()">Keep</button>
+      <button class="btn-delete" onclick="confirmDelete()">Remove</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const EVAL_KEYS = ['hittingContact','hittingPower','armStrength','fieldingAbility','running','athleticism'];
+const STORE_KEY = 'scoutboard_v1';
+
+let players = [];
+let currentId = null;
+let pendingDeleteId = null;
+let saveTimer = null;
+
+// ── Storage ──────────────────────────────────────────
+function load() {
+  try { players = JSON.parse(localStorage.getItem(STORE_KEY) || '[]'); }
+  catch { players = []; }
+}
+
+function persist() {
+  localStorage.setItem(STORE_KEY, JSON.stringify(players));
+}
+
+function uid() {
+  return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+}
+
+// ── Utilities ─────────────────────────────────────────
+function initials(name) {
+  return (name || '?').split(/\s+/).map(w => w[0]).join('').toUpperCase().slice(0, 2) || '?';
+}
+
+function esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function getPlayer(id) { return players.find(p => p.id === id); }
+
+function getAggregate(player) {
+  const rated = EVAL_KEYS.map(k => player.evaluations[k]).filter(v => v > 0);
+  if (!rated.length) return null;
+  return { avg: (rated.reduce((a,b) => a+b, 0) / rated.length).toFixed(1), count: rated.length };
+}
+
+// ── Roster View ──────────────────────────────────────
+function renderRoster() {
+  const list = document.getElementById('player-list');
+  if (!players.length) {
+    list.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">⚾</div>
+        <div class="empty-text">No players yet.<br>Tap <strong>Add Player</strong> to build your roster.</div>
+      </div>`;
+    return;
+  }
+  list.innerHTML = players.map(p => {
+    const agg = getAggregate(p);
+    const chip = agg
+      ? `<div class="score-chip">${agg.avg}</div>`
+      : `<div class="score-chip unrated">—</div>`;
+    const pos = p.position ? `<div class="card-position">${esc(p.position)}</div>` : '';
+    return `
+      <div class="player-card" onclick="openPlayer('${p.id}')">
+        <div class="avatar">${esc(initials(p.name))}</div>
+        <div class="card-info">
+          <div class="card-name">${esc(p.name)}</div>
+          ${pos}
+        </div>
+        ${chip}
+        <button class="del-btn" onclick="event.stopPropagation(); promptDelete('${p.id}')" aria-label="Remove player">✕</button>
+      </div>`;
+  }).join('');
+}
+
+// ── Player Detail View ───────────────────────────────
+function openPlayer(id) {
+  const p = getPlayer(id);
+  if (!p) return;
+  currentId = id;
+
+  document.getElementById('detail-view').classList.add('active');
+  document.getElementById('roster-view').classList.remove('active');
+
+  document.getElementById('hdr-name').textContent = p.name;
+  document.getElementById('profile-avatar').textContent = initials(p.name);
+  document.getElementById('edit-name').value = p.name;
+  document.getElementById('edit-pos').value  = p.position || '';
+  document.getElementById('player-notes').value = p.notes || '';
+
+  EVAL_KEYS.forEach(k => {
+    const sl = document.getElementById('sl-' + k);
+    sl.value = p.evaluations[k] || 0;
+    refreshSlider(sl, k, p.evaluations[k] || 0);
+  });
+
+  refreshAgg(p);
+  setSaveNote('idle');
+
+  document.getElementById('edit-name').oninput = () => onNameEdit();
+  document.getElementById('edit-pos').oninput  = () => schedSave();
+}
+
+function goBack() {
+  flushSave();
+  currentId = null;
+  document.getElementById('roster-view').classList.add('active');
+  document.getElementById('detail-view').classList.remove('active');
+  renderRoster();
+}
+
+function onNameEdit() {
+  const name = document.getElementById('edit-name').value.trim() || 'Unnamed';
+  document.getElementById('hdr-name').textContent = name;
+  document.getElementById('profile-avatar').textContent = initials(name);
+  schedSave();
+}
+
+function onSlider(el, key) {
+  const val = parseInt(el.value, 10);
+  const p = getPlayer(currentId);
+  if (!p) return;
+  p.evaluations[key] = val;
+  refreshSlider(el, key, val);
+  refreshAgg(p);
+  schedSave();
+}
+
+function onNotes(val) {
+  const p = getPlayer(currentId);
+  if (p) { p.notes = val; schedSave(); }
+}
+
+function refreshSlider(el, key, val) {
+  const pct = (val / 5) * 100;
+  el.style.setProperty('--fill', pct + '%');
+  const label = document.getElementById('val-' + key);
+  if (val === 0) {
+    label.textContent = 'Not rated';
+    label.className = 'eval-val unrated';
+  } else {
+    label.textContent = val + ' / 5';
+    label.className = 'eval-val';
+  }
+}
+
+function refreshAgg(p) {
+  const agg = getAggregate(p);
+  document.getElementById('agg-number').textContent = agg ? agg.avg : '—';
+  document.getElementById('agg-rated').textContent  = agg ? `${agg.count}/6 rated` : '';
+}
+
+// ── Auto-save ─────────────────────────────────────────
+function schedSave() {
+  clearTimeout(saveTimer);
+  setSaveNote('idle');
+  saveTimer = setTimeout(flushSave, 900);
+}
+
+function flushSave() {
+  clearTimeout(saveTimer);
+  const p = getPlayer(currentId);
+  if (!p) return;
+  p.name     = document.getElementById('edit-name').value.trim() || 'Unnamed';
+  p.position = document.getElementById('edit-pos').value.trim();
+  p.notes    = document.getElementById('player-notes').value;
+  persist();
+  setSaveNote('saved');
+}
+
+function setSaveNote(state) {
+  const el = document.getElementById('save-note');
+  if (!el) return;
+  if (state === 'saved') {
+    el.textContent = '✓ Saved';
+    el.className = 'autosave-note saved';
+    setTimeout(() => setSaveNote('idle'), 2000);
+  } else {
+    el.textContent = 'Changes saved automatically';
+    el.className = 'autosave-note';
+  }
+}
+
+// ── Add Player Modal ──────────────────────────────────
+function openAddModal() {
+  document.getElementById('inp-name').value = '';
+  document.getElementById('inp-pos').value  = '';
+  document.getElementById('add-modal').classList.add('open');
+  setTimeout(() => document.getElementById('inp-name').focus(), 80);
+}
+
+function closeAddModal() {
+  document.getElementById('add-modal').classList.remove('open');
+}
+
+function onModalBgClick(e) {
+  if (e.target === e.currentTarget) closeAddModal();
+}
+
+function confirmAdd() {
+  const name = document.getElementById('inp-name').value.trim();
+  if (!name) { document.getElementById('inp-name').focus(); return; }
+  const position = document.getElementById('inp-pos').value.trim();
+  const p = {
+    id: uid(),
+    name,
+    position,
+    evaluations: Object.fromEntries(EVAL_KEYS.map(k => [k, 0])),
+    notes: ''
+  };
+  players.push(p);
+  persist();
+  closeAddModal();
+  openPlayer(p.id);
+}
+
+// ── Delete ────────────────────────────────────────────
+function promptDelete(id) {
+  const p = getPlayer(id);
+  if (!p) return;
+  pendingDeleteId = id;
+  document.getElementById('confirm-msg').textContent =
+    `Remove "${p.name}" from the roster? This cannot be undone.`;
+  document.getElementById('confirm-modal').classList.add('open');
+}
+
+function closeConfirm() {
+  pendingDeleteId = null;
+  document.getElementById('confirm-modal').classList.remove('open');
+}
+
+function confirmDelete() {
+  if (!pendingDeleteId) return;
+  players = players.filter(p => p.id !== pendingDeleteId);
+  persist();
+  closeConfirm();
+  renderRoster();
+}
+
+// ── Service Worker ────────────────────────────────────
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').catch(() => {});
+}
+
+// ── Init ──────────────────────────────────────────────
+load();
+renderRoster();
+</script>
+</body>
+</html>
